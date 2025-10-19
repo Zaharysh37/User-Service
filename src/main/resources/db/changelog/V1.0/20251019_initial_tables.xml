@@ -5,13 +5,44 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="20251019-2" author="Zaharysh37">
-        <comment>Apply indexes for V1.0 tables</comment>
+    <changeSet id="20251019-1" author="Zaharysh37">
+        <comment>Create initial users and card_info V1.0 tables</comment>
 
-        <createIndex indexName="idx_card_info_user_id"
-                     tableName="card_info">
-            <column name="user_id"/>
-        </createIndex>
+        <createTable tableName="users">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="surname" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="birth_date" type="DATE"/>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="card_info">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"
+                             foreignKeyName="fk_card_info_user"
+                             references="users(id)"/>
+            </column>
+            <column name="number" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="holder" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expiration_date" type="VARCHAR(7)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
 
     </changeSet>
 
