@@ -59,11 +59,6 @@ public class UserService {
     }
 
     @Transactional
-    public boolean updateUserName(Long id, String name) {
-        return userRepository.updateUserName(id, name) == 1;
-    }
-
-    @Transactional
     public void deleteUser(Long id) {
         User existingUser = findUserById(id);
         userRepository.delete(existingUser);

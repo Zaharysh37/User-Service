@@ -17,9 +17,6 @@ public class CardInfo {
     @Column(nullable = false)
     private String number;
 
-    @Column(nullable = false)
-    private String holder;
-
     @Column(name = "expiration_date", nullable = false)
     private String expirationDate;
 
