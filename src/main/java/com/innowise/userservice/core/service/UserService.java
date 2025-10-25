@@ -1,0 +1,76 @@
+package com.innowise.userservice.core.service;
+
+import com.innowise.userservice.api.dto.userdto.CreateUserDto;
+import com.innowise.userservice.api.dto.userdto.GetUserDto;
+import com.innowise.userservice.core.dao.UserRepository;
+import com.innowise.userservice.core.entity.User;
+import com.innowise.userservice.core.mapper.usermapper.CreateUserMapper;
+import com.innowise.userservice.core.mapper.usermapper.GetUserMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class UserService {
+    private final UserRepository userRepository;
+    private final CreateUserMapper createUserMapper;
+    private final GetUserMapper getUserMapper;
+
+    @Transactional
+    public GetUserDto createUser(CreateUserDto dto) {
+        User user = createUserMapper.toEntity(dto);
+        User savedUser = userRepository.save(user);
+        return getUserMapper.toDto(savedUser);
+    }
+
+    public GetUserDto getUserById(Long id) {
+        User existingUser = findUserById(id);
+        return getUserMapper.toDto(existingUser);
+    }
+
+    public GetUserDto getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+            .orElse(null); //Exception
+        return getUserMapper.toDto(user);
+    }
+
+    public Page<GetUserDto> getUserByFirstLettersOfSurname(String letter, Pageable pageable) {
+        Page<User> users = userRepository.findBySurnameStartsWith(letter, pageable);
+        return users.map(getUserMapper::toDto);
+    }
+
+    public Page<GetUserDto> getAllUsers(Pageable pageable) {
+        Page<User> users = userRepository.findAll(pageable);
+        return users.map(getUserMapper::toDto);
+    }
+
+    @Transactional
+    public GetUserDto updateUser(Long id, CreateUserDto dto) {
+        User existingUser = findUserById(id);
+
+        createUserMapper.merge(existingUser, dto);
+        User updateUser = userRepository.save(existingUser);
+
+        return getUserMapper.toDto(updateUser);
+    }
+
+    @Transactional
+    public boolean updateUserName(Long id, String name) {
+        return userRepository.updateUserName(id, name) == 1;
+    }
+
+    @Transactional
+    public void deleteUser(Long id) {
+        User existingUser = findUserById(id);
+        userRepository.delete(existingUser);
+    }
+
+    private User findUserById(Long id) {
+        return userRepository.findById(id)
+            .orElse(null); //Exception
+    }
+}
