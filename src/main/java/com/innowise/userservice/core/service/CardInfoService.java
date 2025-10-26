@@ -5,9 +5,11 @@ import com.innowise.userservice.api.dto.cardinfodto.GetCardInfoDto;
 import com.innowise.userservice.core.dao.CardInfoRepository;
 import com.innowise.userservice.core.dao.UserRepository;
 import com.innowise.userservice.core.entity.CardInfo;
-import com.innowise.userservice.core.entity.User;
+import com.innowise.userservice.core.exception.ResourceNotFoundException;
 import com.innowise.userservice.core.mapper.cardinfomapper.CreateCardInfoMapper;
 import com.innowise.userservice.core.mapper.cardinfomapper.GetCardInfoMapper;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,14 +25,11 @@ public class CardInfoService {
     private final GetCardInfoMapper getCardInfoMapper;
     private final CreateCardInfoMapper createCardInfoMapper;
 
+    private static final DateTimeFormatter EXPIRATION_FORMAT = DateTimeFormatter.ofPattern("MM/yy");
+
     @Transactional
     public GetCardInfoDto createCardInfos(Long userId, CreateCardInfoDto createCardInfoDto) {
-        User user = userRepository.findById(userId)
-            .orElse(null); //Exception
-
         CardInfo cardInfo = createCardInfoMapper.toEntity(createCardInfoDto);
-        cardInfo.setUser(user);
-
         CardInfo savedCard = cardInfoRepository.save(cardInfo);
         return getCardInfoMapper.toDto(savedCard);
     }
@@ -46,13 +45,23 @@ public class CardInfoService {
     }
 
     @Transactional
-    public void deleteCardInfos(Long userId) {
-        CardInfo cardInfo = findCardInfoById(userId);
+    public void deleteCardInfo(Long id) {
+        CardInfo cardInfo = findCardInfoById(id);
         cardInfoRepository.delete(cardInfo);
     }
 
     private CardInfo findCardInfoById(Long id) {
         return cardInfoRepository.findById(id)
-            .orElse(null); //Exception
+            .orElseThrow(() -> new ResourceNotFoundException("CardInfo not found with id: " + id));
+    }
+
+    @Transactional
+    public int cleanupExpiredCards() {
+        LocalDate lastDay = LocalDate.now().minusDays(1);
+        String expiredDateString = lastDay.format(EXPIRATION_FORMAT);
+
+        int deletedCount = cardInfoRepository.deleteAllExpiredCards(expiredDateString);
+
+        return deletedCount;
     }
 }

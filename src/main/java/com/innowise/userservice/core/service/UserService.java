@@ -1,9 +1,12 @@
 package com.innowise.userservice.core.service;
 
+import com.innowise.userservice.core.exception.ResourceAlreadyExistsException;
 import com.innowise.userservice.api.dto.userdto.CreateUserDto;
 import com.innowise.userservice.api.dto.userdto.GetUserDto;
+import com.innowise.userservice.core.dao.CardInfoRepository;
 import com.innowise.userservice.core.dao.UserRepository;
 import com.innowise.userservice.core.entity.User;
+import com.innowise.userservice.core.exception.ResourceNotFoundException;
 import com.innowise.userservice.core.mapper.usermapper.CreateUserMapper;
 import com.innowise.userservice.core.mapper.usermapper.GetUserMapper;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +22,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final CreateUserMapper createUserMapper;
     private final GetUserMapper getUserMapper;
+    private final CardInfoRepository cardInfoRepository;
 
     @Transactional
     public GetUserDto createUser(CreateUserDto dto) {
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new ResourceAlreadyExistsException("User with email " + dto.getEmail() + " already exists");
+        }
+
         User user = createUserMapper.toEntity(dto);
         User savedUser = userRepository.save(user);
         return getUserMapper.toDto(savedUser);
@@ -34,7 +42,7 @@ public class UserService {
 
     public GetUserDto getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
-            .orElse(null); //Exception
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
         return getUserMapper.toDto(user);
     }
 
@@ -52,6 +60,13 @@ public class UserService {
     public GetUserDto updateUser(Long id, CreateUserDto dto) {
         User existingUser = findUserById(id);
 
+        userRepository.findByEmail(dto.getEmail())
+            .ifPresent(userByEmail -> {
+                if (!userByEmail.getId().equals(id)) {
+                    throw new ResourceAlreadyExistsException("Email " + dto.getEmail() + " is already taken");
+                }
+            });
+
         createUserMapper.merge(existingUser, dto);
         User updateUser = userRepository.save(existingUser);
 
@@ -66,6 +81,12 @@ public class UserService {
 
     private User findUserById(Long id) {
         return userRepository.findById(id)
-            .orElse(null); //Exception
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+    }
+
+    public GetUserDto getUserByCardNumber(String cardNumber) {
+        User user = cardInfoRepository.findUserByCardNumber(cardNumber)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found for card: " + cardNumber));
+        return getUserMapper.toDto(user);
     }
 }
