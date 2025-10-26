@@ -6,6 +6,5 @@ import lombok.Data;
 public class GetCardInfoDto {
     private Long id;
     private String number;
-    private String holder;
     private String expirationDate;
 }
