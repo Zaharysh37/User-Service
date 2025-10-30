@@ -10,7 +10,6 @@ import com.innowise.userservice.core.mapper.usermapper.CreateUserMapper;
 import com.innowise.userservice.core.mapper.usermapper.GetUserMapper;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -27,7 +26,6 @@ public class UserService {
     private final CreateUserMapper createUserMapper;
     private final GetUserMapper getUserMapper;
     private final CardInfoRepository cardInfoRepository;
-    private final CacheManager cacheManager;
 
     @Transactional
     public GetUserDto createUser(CreateUserDto dto) {
@@ -73,11 +71,7 @@ public class UserService {
     @CacheEvict(value = "users", key = "#id")
     public void deleteUser(Long id) {
         User existingUser = findUserById(id);
-        String emailToEvict = existingUser.getEmail();
-
         userRepository.delete(existingUser);
-
-        Objects.requireNonNull(cacheManager.getCache("usersByEmail")).evict(emailToEvict);
     }
 
     private User findUserById(Long id) {
