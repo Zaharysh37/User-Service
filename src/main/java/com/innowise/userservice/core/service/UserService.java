@@ -1,6 +1,5 @@
 package com.innowise.userservice.core.service;
 
-import com.innowise.userservice.core.exception.ResourceAlreadyExistsException;
 import com.innowise.userservice.api.dto.userdto.CreateUserDto;
 import com.innowise.userservice.api.dto.userdto.GetUserDto;
 import com.innowise.userservice.core.dao.CardInfoRepository;
@@ -9,7 +8,9 @@ import com.innowise.userservice.core.entity.User;
 import com.innowise.userservice.core.exception.ResourceNotFoundException;
 import com.innowise.userservice.core.mapper.usermapper.CreateUserMapper;
 import com.innowise.userservice.core.mapper.usermapper.GetUserMapper;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -26,6 +27,7 @@ public class UserService {
     private final CreateUserMapper createUserMapper;
     private final GetUserMapper getUserMapper;
     private final CardInfoRepository cardInfoRepository;
+    private final CacheManager cacheManager;
 
     @Transactional
     public GetUserDto createUser(CreateUserDto dto) {
@@ -34,7 +36,7 @@ public class UserService {
         return getUserMapper.toDto(savedUser);
     }
 
-    //@Cacheable(value = "users", key = "#id")
+    @Cacheable(value = "users", key = "#id")
     public GetUserDto getUserById(Long id) {
         User existingUser = findUserById(id);
         return getUserMapper.toDto(existingUser);
@@ -57,7 +59,7 @@ public class UserService {
     }
 
     @Transactional
-    //@CachePut(value = "users", key = "#id")
+    @CachePut(value = "users", key = "#id")
     public GetUserDto updateUser(Long id, CreateUserDto dto) {
         User existingUser = findUserById(id);
 
@@ -68,10 +70,14 @@ public class UserService {
     }
 
     @Transactional
-    //@CacheEvict(value = "users", key = "#id")
+    @CacheEvict(value = "users", key = "#id")
     public void deleteUser(Long id) {
         User existingUser = findUserById(id);
+        String emailToEvict = existingUser.getEmail();
+
         userRepository.delete(existingUser);
+
+        Objects.requireNonNull(cacheManager.getCache("usersByEmail")).evict(emailToEvict);
     }
 
     private User findUserById(Long id) {
