@@ -88,6 +88,7 @@ public class GlobalExceptionHandler {
         );
     }
 
+    //ResourceAlreadyExistsException
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<GetErrorDto> handleGlobalException(
