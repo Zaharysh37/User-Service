@@ -5,11 +5,13 @@ import com.innowise.userservice.api.dto.cardinfodto.GetCardInfoDto;
 import com.innowise.userservice.core.dao.CardInfoRepository;
 import com.innowise.userservice.core.dao.UserRepository;
 import com.innowise.userservice.core.entity.CardInfo;
+import com.innowise.userservice.core.entity.User;
 import com.innowise.userservice.core.exception.ResourceNotFoundException;
 import com.innowise.userservice.core.mapper.cardinfomapper.CreateCardInfoMapper;
 import com.innowise.userservice.core.mapper.cardinfomapper.GetCardInfoMapper;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +32,9 @@ public class CardInfoService {
     @Transactional
     public GetCardInfoDto createCardInfos(Long userId, CreateCardInfoDto createCardInfoDto) {
         CardInfo cardInfo = createCardInfoMapper.toEntity(createCardInfoDto);
+        Optional<User> user = userRepository.findById(userId);
+        cardInfo.setUser(user
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId)));
         CardInfo savedCard = cardInfoRepository.save(cardInfo);
         return getCardInfoMapper.toDto(savedCard);
     }

@@ -10,6 +10,9 @@ import com.innowise.userservice.core.exception.ResourceNotFoundException;
 import com.innowise.userservice.core.mapper.usermapper.CreateUserMapper;
 import com.innowise.userservice.core.mapper.usermapper.GetUserMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,15 +29,12 @@ public class UserService {
 
     @Transactional
     public GetUserDto createUser(CreateUserDto dto) {
-        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
-            throw new ResourceAlreadyExistsException("User with email " + dto.getEmail() + " already exists");
-        }
-
         User user = createUserMapper.toEntity(dto);
         User savedUser = userRepository.save(user);
         return getUserMapper.toDto(savedUser);
     }
 
+    //@Cacheable(value = "users", key = "#id")
     public GetUserDto getUserById(Long id) {
         User existingUser = findUserById(id);
         return getUserMapper.toDto(existingUser);
@@ -57,15 +57,9 @@ public class UserService {
     }
 
     @Transactional
+    //@CachePut(value = "users", key = "#id")
     public GetUserDto updateUser(Long id, CreateUserDto dto) {
         User existingUser = findUserById(id);
-
-        userRepository.findByEmail(dto.getEmail())
-            .ifPresent(userByEmail -> {
-                if (!userByEmail.getId().equals(id)) {
-                    throw new ResourceAlreadyExistsException("Email " + dto.getEmail() + " is already taken");
-                }
-            });
 
         createUserMapper.merge(existingUser, dto);
         User updateUser = userRepository.save(existingUser);
@@ -74,6 +68,7 @@ public class UserService {
     }
 
     @Transactional
+    //@CacheEvict(value = "users", key = "#id")
     public void deleteUser(Long id) {
         User existingUser = findUserById(id);
         userRepository.delete(existingUser);

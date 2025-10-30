@@ -5,8 +5,9 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <include file="db/changelog/V1.0/20251019_initial_tables.xml"/>
-    <include file="db/changelog/V1.0/20251019_apply_indexes.xml"/>
-    <include file="db/changelog/V1.0/20251025_drop_holder_column.xml"/>
+    <include file="/db/changelog/V1.0/20251019_initial_tables.xml"/>
+    <include file="/db/changelog/V1.0/20251019_apply_indexes.xml"/>
+    <include file="/db/changelog/V1.0/20251025_drop_holder_column.xml"/>
+    <include file="/db/changelog/V1.0/20251030_add_unique_to_card_info_number.xml"/>
 
 </databaseChangeLog>

@@ -1,44 +1,63 @@
 package com.innowise.userservice.core.exception;
 
 import com.innowise.userservice.api.dto.GetErrorDto;
-import java.time.LocalDateTime;
-import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
+import java.time.LocalDateTime;
+import java.util.stream.Collectors;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<GetErrorDto> handleResourceNotFoundException(
         ResourceNotFoundException ex, WebRequest request) {
 
-        GetErrorDto errorDto = new GetErrorDto(
-            LocalDateTime.now(),
-            HttpStatus.NOT_FOUND.value(),
-            "Not Found",
+        return buildErrorResponse(
+            ex,
             ex.getMessage(),
-            request.getDescription(false).replace("uri=", "")
+            HttpStatus.NOT_FOUND,
+            request
         );
-        return new ResponseEntity<>(errorDto, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(ResourceAlreadyExistsException.class)
     public ResponseEntity<GetErrorDto> handleResourceAlreadyExistsException(
         ResourceAlreadyExistsException ex, WebRequest request) {
 
-        GetErrorDto errorDto = new GetErrorDto(
-            LocalDateTime.now(),
-            HttpStatus.CONFLICT.value(),
-            "Conflict",
+        return buildErrorResponse(
+            ex,
             ex.getMessage(),
-            request.getDescription(false).replace("uri=", "")
+            HttpStatus.CONFLICT,
+            request
         );
-        return new ResponseEntity<>(errorDto, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<GetErrorDto> handleDataIntegrityViolation(
+        DataIntegrityViolationException ex, WebRequest request) {
+
+        String message = "Database conflict: " + ex.getMostSpecificCause().getMessage();
+
+        logger.warn("Data integrity violation: {}", message);
+
+        return buildErrorResponse(
+            ex,
+            "A resource with these details already exists or violates data constraints.", // Безопасное сообщение
+            HttpStatus.CONFLICT,
+            request
+        );
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -47,29 +66,54 @@ public class GlobalExceptionHandler {
 
         String errorMessage = ex.getBindingResult().getFieldErrors().stream()
             .map(error -> error.getField() + ": " + error.getDefaultMessage())
-            .collect(Collectors.joining(", "));
+            .collect(Collectors.joining("; "));
 
-        GetErrorDto errorDto = new GetErrorDto(
-            LocalDateTime.now(),
-            HttpStatus.BAD_REQUEST.value(),
-            "Validation Failed",
+        return buildErrorResponse(
+            ex,
             errorMessage,
-            request.getDescription(false).replace("uri=", "")
+            HttpStatus.BAD_REQUEST,
+            request
         );
-        return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<GetErrorDto> handleMalformedJson(
+        HttpMessageNotReadableException ex, WebRequest request) {
+
+        return buildErrorResponse(
+            ex,
+            "Invalid request body: JSON is malformed.",
+            HttpStatus.BAD_REQUEST,
+            request
+        );
+    }
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<GetErrorDto> handleGlobalException(
         Exception ex, WebRequest request) {
 
+        logger.error("Unhandled exception caught: {}", ex.getMessage(), ex);
+
+        return buildErrorResponse(
+            ex,
+            "An unexpected internal server error occurred.",
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            request
+        );
+    }
+
+    private ResponseEntity<GetErrorDto> buildErrorResponse(
+        Exception ex, String message, HttpStatus status, WebRequest request) {
+
         GetErrorDto errorDto = new GetErrorDto(
             LocalDateTime.now(),
-            HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            "Internal Server Error",
-            ex.getMessage(),
+            status.value(),
+            status.getReasonPhrase(),
+            message,
             request.getDescription(false).replace("uri=", "")
         );
-        return new ResponseEntity<>(errorDto, HttpStatus.INTERNAL_SERVER_ERROR);
+
+        return new ResponseEntity<>(errorDto, status);
     }
 }
