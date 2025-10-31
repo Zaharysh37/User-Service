@@ -39,7 +39,7 @@ jobs:
         run: |
           ./mvnw sonar:sonar \
             -Dsonar.projectKey=Zaharysh37_User-Service \
-            -Dsonar.organization=Zaharysh37 \
+            -Dsonar.organization=zaharysh37 \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }}
         env:
