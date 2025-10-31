@@ -14,11 +14,8 @@ public class CardInfo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String number;
-
-    @Column(nullable = false)
-    private String holder;
 
     @Column(name = "expiration_date", nullable = false)
     private String expirationDate;

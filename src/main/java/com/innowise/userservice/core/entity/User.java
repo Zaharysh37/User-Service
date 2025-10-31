@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.List;
+import org.hibernate.annotations.BatchSize;
 
 @Getter
 @Setter
@@ -30,5 +31,6 @@ public class User {
     private String email;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @BatchSize(size = 25)
     private List<CardInfo> cards;
 }
