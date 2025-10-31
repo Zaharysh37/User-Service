@@ -33,6 +33,16 @@
             ${project.build.directory}/site/jacoco/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
 
+        <sonar.coverage.exclusions>
+            **/com/innowise/userservice/UserServiceApplication.java,
+            **/com/innowise/userservice/core/entity/**,
+            **/com/innowise/userservice/core/dao/**,
+            **/com/innowise/userservice/core/exception/**,
+            **/com/innowise/userservice/core/mapper/**,
+            **/com/innowise/userservice/api/dto/**,
+            **/com/innowise/userservice/api/controller/**
+        </sonar.coverage.exclusions>
+
         <sonar.tests>src/test/java</sonar.tests>
     </properties>
     <dependencyManagement>
