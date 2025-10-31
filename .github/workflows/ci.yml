@@ -11,7 +11,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # --- SETUP ---
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -32,13 +31,11 @@ jobs:
       - name: Make mvnw executable
         run: chmod +x ./mvnw
 
-      # --- BUILD & TEST ---
       - name: Build and Test with Maven
         run: ./mvnw clean verify
 
-      # --- CODE ANALYSIS (SonarQube) ---
       - name: Analyze with SonarCloud
-        if: ${{ (github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')) }}
+        #if: ${{ (github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')) }}
         run: ./mvnw sonar:sonar \
           -Dsonar.projectKey=Zaharush37_User-Service \
           -Dsonar.organization=Zaharush37 \
@@ -47,16 +44,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # --- ARTIFACT CREATION ---
       - name: Login to Docker Hub
-        if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') }}
+        #if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') }}
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Build and push Docker image
-        if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') }}
+        #if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') }}
         uses: docker/build-push-action@v5
         with:
           context: .
