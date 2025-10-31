@@ -25,15 +25,22 @@ public abstract class BaseIntegrationTest {
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+
+        String jdbcUrl = postgres.getJdbcUrl()
+            .replace("localhost", postgres.getHost());
+
+        registry.add("spring.datasource.url", () -> jdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
+
+        registry.add("spring.datasource.hikari.max-lifetime", () -> "30000");
+        registry.add("spring.datasource.hikari.validation-timeout", () -> "3000");
+
+        registry.add("spring.liquibase.enabled", () -> "true");
+        registry.add("spring.liquibase.change-log", () -> "classpath:db/changelog/db.changelog-master.xml");
 
         registry.add("spring.data.redis.host", redis::getHost);
         registry.add("spring.data.redis.port", redis::getFirstMappedPort);
         registry.add("spring.cache.type", () -> "redis");
-
-        registry.add("spring.liquibase.enabled", () -> "true");
-        registry.add("spring.liquibase.change-log", () -> "classpath:db/changelog/db.changelog-master.xml");
     }
 }
