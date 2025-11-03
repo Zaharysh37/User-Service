@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20251030-0" author="Zaharysh37">
+        <comment>Add unique constraint to card_info's number column</comment>
+
+        <addUniqueConstraint
+                tableName="card_info"
+                columnNames="number"
+                constraintName="uk_card_info_number"/>
+
+    </changeSet>
+</databaseChangeLog>

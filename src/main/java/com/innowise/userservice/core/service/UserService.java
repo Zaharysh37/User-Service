@@ -2,11 +2,16 @@ package com.innowise.userservice.core.service;
 
 import com.innowise.userservice.api.dto.userdto.CreateUserDto;
 import com.innowise.userservice.api.dto.userdto.GetUserDto;
+import com.innowise.userservice.core.dao.CardInfoRepository;
 import com.innowise.userservice.core.dao.UserRepository;
 import com.innowise.userservice.core.entity.User;
+import com.innowise.userservice.core.exception.ResourceNotFoundException;
 import com.innowise.userservice.core.mapper.usermapper.CreateUserMapper;
 import com.innowise.userservice.core.mapper.usermapper.GetUserMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,6 +24,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final CreateUserMapper createUserMapper;
     private final GetUserMapper getUserMapper;
+    private final CardInfoRepository cardInfoRepository;
 
     @Transactional
     public GetUserDto createUser(CreateUserDto dto) {
@@ -27,6 +33,7 @@ public class UserService {
         return getUserMapper.toDto(savedUser);
     }
 
+    @Cacheable(value = "users", key = "#id")
     public GetUserDto getUserById(Long id) {
         User existingUser = findUserById(id);
         return getUserMapper.toDto(existingUser);
@@ -34,7 +41,7 @@ public class UserService {
 
     public GetUserDto getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
-            .orElse(null); //Exception
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
         return getUserMapper.toDto(user);
     }
 
@@ -49,6 +56,7 @@ public class UserService {
     }
 
     @Transactional
+    @CachePut(value = "users", key = "#id")
     public GetUserDto updateUser(Long id, CreateUserDto dto) {
         User existingUser = findUserById(id);
 
@@ -59,11 +67,7 @@ public class UserService {
     }
 
     @Transactional
-    public boolean updateUserName(Long id, String name) {
-        return userRepository.updateUserName(id, name) == 1;
-    }
-
-    @Transactional
+    @CacheEvict(value = "users", key = "#id")
     public void deleteUser(Long id) {
         User existingUser = findUserById(id);
         userRepository.delete(existingUser);
@@ -71,6 +75,12 @@ public class UserService {
 
     private User findUserById(Long id) {
         return userRepository.findById(id)
-            .orElse(null); //Exception
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+    }
+
+    public GetUserDto getUserByCardNumber(String cardNumber) {
+        User user = cardInfoRepository.findUserByCardNumber(cardNumber)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found for card: " + cardNumber));
+        return getUserMapper.toDto(user);
     }
 }

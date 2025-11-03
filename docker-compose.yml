@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: user-service-db
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_HOST_PORT}:5432"
+
+  redis-cache:
+    image: redis:7.2-alpine
+    container_name: user-service-redis
+    ports:
+      - "${REDIS_PORT}:6379"
+
+  user-service:
+    container_name: user-service-app
+    build: .
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+
+      DB_NAME: ${DB_NAME}
+      APP_PORT: ${APP_PORT}
+    depends_on:
+      - postgres-db
+      - redis-cache
