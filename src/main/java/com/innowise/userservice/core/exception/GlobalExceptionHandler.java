@@ -7,6 +7,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -88,7 +90,29 @@ public class GlobalExceptionHandler {
         );
     }
 
-    //ResourceAlreadyExistsException
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<GetErrorDto> handleAuthenticationException(
+        AuthenticationException ex, WebRequest request) {
+
+        return buildErrorResponse(
+            ex,
+            "Authentication failed: " + ex.getMessage(),
+            HttpStatus.UNAUTHORIZED,
+            request
+        );
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<GetErrorDto> handleAccessDeniedException(
+        AccessDeniedException ex, WebRequest request) {
+
+        return buildErrorResponse(
+            ex,
+            "Access Denied: You do not have permission to access this resource.",
+            HttpStatus.FORBIDDEN,
+            request
+        );
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<GetErrorDto> handleGlobalException(

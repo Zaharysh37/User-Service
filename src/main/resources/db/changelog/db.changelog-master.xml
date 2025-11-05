@@ -9,5 +9,6 @@
     <include file="/db/changelog/V1.0/20251019_apply_indexes.xml"/>
     <include file="/db/changelog/V1.0/20251025_drop_holder_column.xml"/>
     <include file="/db/changelog/V1.0/20251030_add_unique_to_card_info_number.xml"/>
+    <include file="/db/changelog/V1.0/20251105_add_column_sub_to_users.xml"/>
 
 </databaseChangeLog>
