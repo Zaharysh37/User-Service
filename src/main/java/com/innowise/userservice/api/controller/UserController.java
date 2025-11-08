@@ -1,6 +1,5 @@
 package com.innowise.userservice.api.controller;
 
-import com.innowise.userservice.api.dto.InternalRegisterUserDto;
 import com.innowise.userservice.api.dto.userdto.CreateUserDto;
 import com.innowise.userservice.api.dto.userdto.GetUserDto;
 import com.innowise.userservice.core.service.UserService;
@@ -29,8 +28,8 @@ public class UserController {
 
     @PostMapping("/internal/register")
     public ResponseEntity<GetUserDto> internalCreateUser(@Valid @RequestBody
-                                                         InternalRegisterUserDto dto) {
-        GetUserDto createdUser = userService.createUserFromInternal(dto);
+                                                         CreateUserDto dto) {
+        GetUserDto createdUser = userService.createUser(dto);
         return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
 

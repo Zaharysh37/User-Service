@@ -1,7 +1,7 @@
 package com.innowise.userservice.security;
 
-import com.innowise.userservice.core.dao.UserRepository;
-import com.innowise.userservice.core.entity.User;
+import com.innowise.userservice.core.dao.*;
+import com.innowise.userservice.core.entity.*;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 public class SecurityHelper {
 
     private final UserRepository userRepository;
+    private final CardInfoRepository cardInfoRepository;
 
     public boolean isOwner(Long id) {
         UUID subFromToken = getSubFromToken();
@@ -27,6 +28,19 @@ public class SecurityHelper {
         }
 
         return userFromDb.getSub() != null && userFromDb.getSub().equals(subFromToken);
+    }
+
+    public boolean isCardOwner(Long cardId) {
+        UUID subFromToken = getSubFromToken();
+        if (subFromToken == null) return false;
+
+        CardInfo card = cardInfoRepository.findById(cardId).orElse(null);
+        if (card == null) return false;
+
+        User owner = card.getUser();
+        if (owner == null || owner.getSub() == null) return false;
+
+        return owner.getSub().equals(subFromToken);
     }
 
     private UUID getSubFromToken() {

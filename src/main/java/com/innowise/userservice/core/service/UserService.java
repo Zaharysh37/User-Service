@@ -1,17 +1,13 @@
 package com.innowise.userservice.core.service;
 
-import com.innowise.userservice.api.dto.InternalRegisterUserDto;
 import com.innowise.userservice.api.dto.userdto.CreateUserDto;
 import com.innowise.userservice.api.dto.userdto.GetUserDto;
 import com.innowise.userservice.core.dao.CardInfoRepository;
 import com.innowise.userservice.core.dao.UserRepository;
 import com.innowise.userservice.core.entity.User;
-import com.innowise.userservice.core.exception.ResourceAlreadyExistsException;
 import com.innowise.userservice.core.exception.ResourceNotFoundException;
-import com.innowise.userservice.core.mapper.InternalRegisterUserMapper;
 import com.innowise.userservice.core.mapper.usermapper.CreateUserMapper;
 import com.innowise.userservice.core.mapper.usermapper.GetUserMapper;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -29,12 +25,10 @@ public class UserService {
     private final CreateUserMapper createUserMapper;
     private final GetUserMapper getUserMapper;
     private final CardInfoRepository cardInfoRepository;
-    private final InternalRegisterUserMapper internalRegisterUserMapper;
 
     @Transactional
     public GetUserDto createUser(CreateUserDto dto) {
         User user = createUserMapper.toEntity(dto);
-        user.setSub(UUID.randomUUID()); //not cool
         User savedUser = userRepository.save(user);
         return getUserMapper.toDto(savedUser);
     }
@@ -88,15 +82,5 @@ public class UserService {
         User user = cardInfoRepository.findUserByCardNumber(cardNumber)
             .orElseThrow(() -> new ResourceNotFoundException("User not found for card: " + cardNumber));
         return getUserMapper.toDto(user);
-    }
-
-    @Transactional
-    public GetUserDto createUserFromInternal(InternalRegisterUserDto dto) {
-        if (userRepository.existsBySub(dto.getSub())) {
-            throw new ResourceAlreadyExistsException("User with sub " + dto.getSub() + " already exists");
-        }
-        User user = internalRegisterUserMapper.toEntity(dto);
-        User savedUser = userRepository.save(user);
-        return getUserMapper.toDto(savedUser);
     }
 }
