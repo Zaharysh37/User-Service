@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.*;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +26,7 @@ public class CardInfoController {
     private final CardInfoService cardInfoService;
 
     @PostMapping("/users/{userId}/cards")
+    @PreAuthorize("hasRole('ADMIN') or @securityHelper.isOwner(#userId)")
     public ResponseEntity<GetCardInfoDto> createCardForUser(
         @PathVariable Long userId,
         @Valid @RequestBody CreateCardInfoDto createCardInfoDto) {
@@ -34,18 +36,21 @@ public class CardInfoController {
     }
 
     @GetMapping("/cards/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @securityHelper.isCardOwner(#id)")
     public ResponseEntity<GetCardInfoDto> getCardById(@PathVariable Long id) {
         GetCardInfoDto card = cardInfoService.getCardInfoById(id);
         return new ResponseEntity<>(card, HttpStatus.OK);
     }
 
     @GetMapping("/cards")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<GetCardInfoDto>> getAllCards(Pageable pageable) {
         Page<GetCardInfoDto> cards = cardInfoService.getAllCardInfos(pageable);
         return new ResponseEntity<>(cards, HttpStatus.OK);
     }
 
     @DeleteMapping("/cards/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @securityHelper.isCardOwner(#id)")
     public ResponseEntity<Void> deleteCard(@PathVariable Long id) {
         cardInfoService.deleteCardInfo(id);
         return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);

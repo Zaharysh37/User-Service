@@ -1,6 +1,7 @@
 package com.innowise.userservice.core.entity;
 
 import jakarta.persistence.*;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,6 +30,9 @@ public class User {
 
     @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(name = "sub", unique = true)
+    private UUID sub;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @BatchSize(size = 25)
