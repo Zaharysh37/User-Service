@@ -9,13 +9,18 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 
 import java.util.Objects;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class UserServiceIntegrationTest extends BaseIntegrationTest {
@@ -43,6 +48,7 @@ class UserServiceIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void test_createUser_Success() {
         CreateUserDto dto = createTestUserDto();
 
@@ -55,6 +61,7 @@ class UserServiceIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void test_getUserById_ThrowsException_IfNotFound() {
         assertThrows(ResourceNotFoundException.class, () -> {
             userService.getUserById(99L);
@@ -62,6 +69,7 @@ class UserServiceIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void test_Cache_FullLifecycle_Get_Update_Delete() {
         GetUserDto createdUser = userService.createUser(createTestUserDto());
         Long userId = createdUser.getId();
@@ -95,5 +103,13 @@ class UserServiceIntegrationTest extends BaseIntegrationTest {
     private Object getCacheValue(Long id) {
         Cache.ValueWrapper valueWrapper = cacheManager.getCache("users").get(id);
         return (valueWrapper != null) ? valueWrapper.get() : null;
+    }
+
+    @TestConfiguration
+    static class TestSecurityConfiguration {
+        @Bean
+        public JwtDecoder jwtDecoder() {
+            return mock(JwtDecoder.class);
+        }
     }
 }

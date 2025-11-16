@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,6 +44,7 @@ class UserServiceTest {
     private UserService userService;
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void test_createUser_Success() {
         CreateUserDto createDto = new CreateUserDto();
         User userEntity = new User();
@@ -66,6 +68,7 @@ class UserServiceTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void test_getUserById_Success() {
         User userEntity = new User();
         userEntity.setId(1L);
@@ -83,6 +86,7 @@ class UserServiceTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void test_getUserById_NotFound_ThrowsException() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -94,6 +98,7 @@ class UserServiceTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void test_getUserByEmail_Success() {
         String email = "test@mail.com";
         User userEntity = new User();
@@ -111,6 +116,7 @@ class UserServiceTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void test_getUserByEmail_NotFound_ThrowsException() {
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
@@ -120,6 +126,7 @@ class UserServiceTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void test_getAllUsers_Success() {
         Pageable pageable = PageRequest.of(0, 10);
         User user1 = new User();
@@ -135,6 +142,7 @@ class UserServiceTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void test_updateUser_Success() {
         Long userId = 1L;
         CreateUserDto updateDto = new CreateUserDto();
@@ -162,8 +170,8 @@ class UserServiceTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void test_deleteUser_Success() {
-        // --- Arrange ---
         Long userId = 1L;
         User existingUser = new User();
         existingUser.setId(userId);
@@ -177,6 +185,7 @@ class UserServiceTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void test_getUserByCardNumber_Success() {
         String cardNumber = "1234-5678";
         User userEntity = new User();

@@ -11,9 +11,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class CardInfoServiceIntegrationTest extends BaseIntegrationTest {
@@ -53,6 +58,7 @@ class CardInfoServiceIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void test_createCardInfos_Success() {
         CreateCardInfoDto dto = createTestCardDto();
         Long userId = testUser.getId();
@@ -68,6 +74,7 @@ class CardInfoServiceIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void test_createCardInfos_UserNotFound_ThrowsException() {
         CreateCardInfoDto dto = createTestCardDto();
         Long nonExistentUserId = 999L;
@@ -78,6 +85,7 @@ class CardInfoServiceIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void test_deleteCardInfo_Success() {
         GetCardInfoDto createdCard = cardInfoService.createCardInfos(testUser.getId(), createTestCardDto());
         Long cardId = createdCard.getId();
@@ -89,5 +97,13 @@ class CardInfoServiceIntegrationTest extends BaseIntegrationTest {
         assertFalse(cardInfoRepository.findById(cardId).isPresent());
 
         assertTrue(userRepository.findById(testUser.getId()).isPresent());
+    }
+
+    @TestConfiguration
+    static class TestSecurityConfiguration {
+        @Bean
+        public JwtDecoder jwtDecoder() {
+            return mock(JwtDecoder.class);
+        }
     }
 }

@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,6 +44,7 @@ class CardInfoServiceTest {
     private CardInfoService cardInfoService;
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void test_createCardInfos_Success() {
         Long userId = 1L;
         CreateCardInfoDto createDto = new CreateCardInfoDto();
