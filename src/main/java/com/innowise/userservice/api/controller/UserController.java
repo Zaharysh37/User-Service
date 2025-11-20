@@ -4,6 +4,7 @@ import com.innowise.userservice.api.dto.userdto.CreateUserDto;
 import com.innowise.userservice.api.dto.userdto.GetUserDto;
 import com.innowise.userservice.core.service.UserService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -52,10 +53,18 @@ public class UserController {
     public ResponseEntity<GetUserDto> getUserById(@PathVariable Long id) {
         GetUserDto user = userService.getUserById(id);
         return new ResponseEntity<>(user, HttpStatus.OK);
+
+    }
+
+    @GetMapping("/by-ids")
+    @PreAuthorize("hasRole('ADMIN') or @securityHelper.isOwner(#id)")
+    public ResponseEntity<Page<GetUserDto>> getUserByIds(@RequestBody List<Long> ids, Pageable pageable) {
+        Page<GetUserDto> users = userService.getUserByIds(ids, pageable);
+        return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
     @GetMapping("/email")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or @securityHelper.isEmailOwner(#email)")
     public ResponseEntity<GetUserDto> getUserByEmail(@RequestParam String email) {
         GetUserDto user = userService.getUserByEmail(email);
         return new ResponseEntity<>(user, HttpStatus.OK);

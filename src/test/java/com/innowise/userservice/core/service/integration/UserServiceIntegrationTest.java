@@ -3,8 +3,11 @@ package com.innowise.userservice.core.service.integration;
 import com.innowise.userservice.api.dto.userdto.CreateUserDto;
 import com.innowise.userservice.api.dto.userdto.GetUserDto;
 import com.innowise.userservice.core.dao.UserRepository;
+import com.innowise.userservice.core.entity.User;
 import com.innowise.userservice.core.exception.ResourceNotFoundException;
 import com.innowise.userservice.core.service.UserService;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +18,9 @@ import org.springframework.cache.CacheManager;
 
 import java.util.Objects;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
@@ -66,6 +72,43 @@ class UserServiceIntegrationTest extends BaseIntegrationTest {
         assertThrows(ResourceNotFoundException.class, () -> {
             userService.getUserById(99L);
         });
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void test_getUserByIds_WithPagination() {
+        for (int i = 1; i <= 5; i++) {
+            CreateUserDto dto = createTestUserDto();
+            dto.setEmail("user" + i + "@mail.com");
+            dto.setName("User" + i);
+            userService.createUser(dto);
+        }
+
+        List<Long> allIds = userRepository.findAll().stream()
+            .map(User::getId)
+            .collect(Collectors.toList());
+
+        Pageable pageable = PageRequest.of(0, 2);
+
+        Page<GetUserDto> result = userService.getUserByIds(allIds, pageable);
+
+        assertNotNull(result);
+        assertEquals(2, result.getContent().size());
+        assertEquals(5, result.getTotalElements());
+        assertEquals(3, result.getTotalPages());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void test_getUserByIds_NonExistentIds_ReturnsEmptyPage() {
+        List<Long> nonExistentIds = List.of(999L, 1000L);
+        Pageable pageable = PageRequest.of(0, 10);
+
+        Page<GetUserDto> result = userService.getUserByIds(nonExistentIds, pageable);
+
+        assertNotNull(result);
+        assertTrue(result.getContent().isEmpty());
+        assertEquals(0, result.getTotalElements());
     }
 
     @Test

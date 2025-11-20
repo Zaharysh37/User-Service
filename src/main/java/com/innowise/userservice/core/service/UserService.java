@@ -8,6 +8,7 @@ import com.innowise.userservice.core.entity.User;
 import com.innowise.userservice.core.exception.ResourceNotFoundException;
 import com.innowise.userservice.core.mapper.usermapper.CreateUserMapper;
 import com.innowise.userservice.core.mapper.usermapper.GetUserMapper;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -37,6 +38,11 @@ public class UserService {
     public GetUserDto getUserById(Long id) {
         User existingUser = findUserById(id);
         return getUserMapper.toDto(existingUser);
+    }
+
+    public Page<GetUserDto> getUserByIds(List<Long> ids, Pageable pageable) {
+        Page<User> existingUsers = userRepository.findAllById(ids, pageable);
+        return existingUsers.map(getUserMapper::toDto);
     }
 
     public GetUserDto getUserByEmail(String email) {

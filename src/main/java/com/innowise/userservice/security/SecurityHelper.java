@@ -30,6 +30,20 @@ public class SecurityHelper {
         return userFromDb.getSub() != null && userFromDb.getSub().equals(subFromToken);
     }
 
+    public boolean isEmailOwner(String email) {
+        UUID subFromToken = getSubFromToken();
+        if (subFromToken == null) {
+            return false;
+        }
+
+        User userFromDb = userRepository.findByEmail(email).orElse(null);
+        if (userFromDb == null) {
+            return false;
+        }
+
+        return userFromDb.getSub() != null && userFromDb.getSub().equals(subFromToken);
+    }
+
     public boolean isCardOwner(Long cardId) {
         UUID subFromToken = getSubFromToken();
         if (subFromToken == null) return false;
