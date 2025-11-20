@@ -1,4 +1,4 @@
-name: Java CI Pipeline (Build, Test, Analyze, Dockerize)
+name: Java CI Pipeline (User Service)
 
 on:
   push:
