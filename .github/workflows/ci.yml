@@ -35,7 +35,7 @@ jobs:
         run: ./mvnw clean verify
 
       - name: Analyze with SonarCloud
-        if: ${{ (github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')) }}
+        if: ${{ (github.event_name == 'push' || github.event_name == 'pull_request') }}
         run: |
           ./mvnw sonar:sonar \
             -Dsonar.projectKey=Zaharysh37_User-Service \
