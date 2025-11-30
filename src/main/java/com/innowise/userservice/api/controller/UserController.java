@@ -53,7 +53,6 @@ public class UserController {
     public ResponseEntity<GetUserDto> getUserById(@PathVariable Long id) {
         GetUserDto user = userService.getUserById(id);
         return new ResponseEntity<>(user, HttpStatus.OK);
-
     }
 
     @PostMapping("/batch/id")
