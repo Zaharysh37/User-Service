@@ -15,9 +15,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
 
-    @Query("SELECT u FROM User u WHERE u.id IN :ids")
-    Page<User> findAllById(Iterable<Long> ids, Pageable pageable);
-
     @Override
     @EntityGraph(attributePaths = {"cards"})
     Optional<User> findById(Long id);

@@ -27,8 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     private final UserService userService;
 
-    @PostMapping("/internal/register")
-    public ResponseEntity<GetUserDto> internalCreateUser(@Valid @RequestBody
+    @PostMapping("/registration")
+    public ResponseEntity<GetUserDto> registerUser(@Valid @RequestBody
                                                          CreateUserDto dto) {
         GetUserDto createdUser = userService.createUser(dto);
         return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
@@ -56,10 +56,10 @@ public class UserController {
 
     }
 
-    @GetMapping("/by-ids")
-    @PreAuthorize("hasRole('ADMIN') or @securityHelper.isOwner(#id)")
-    public ResponseEntity<Page<GetUserDto>> getUserByIds(@RequestBody List<Long> ids, Pageable pageable) {
-        Page<GetUserDto> users = userService.getUserByIds(ids, pageable);
+    @PostMapping("/batch/id")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<GetUserDto>> getAllById(@RequestBody List<Long> ids) {
+        List<GetUserDto> users = userService.getAllById(ids);
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
