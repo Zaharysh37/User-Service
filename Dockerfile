@@ -7,7 +7,9 @@ COPY src ./src
 
 RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:17-jdk-jammy
+FROM eclipse-temurin:17-jre-alpine
+
+RUN apk add --no-cache curl
 
 WORKDIR /app
 
