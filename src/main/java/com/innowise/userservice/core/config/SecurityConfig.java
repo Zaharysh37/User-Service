@@ -1,5 +1,6 @@
 package com.innowise.userservice.core.config;
 
+import com.innowise.userservice.core.filter.InternalTokenFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,12 +15,15 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
+
+    private final InternalTokenFilter internalTokenFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -42,7 +46,8 @@ public class SecurityConfig {
                 .permitAll()
                 .anyRequest()
                 .authenticated()
-            );
+            )
+            .addFilterBefore(internalTokenFilter, UsernamePasswordAuthenticationFilter.class);;
 
         return http.build();
     }
