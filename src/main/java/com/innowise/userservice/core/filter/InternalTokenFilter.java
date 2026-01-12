@@ -36,23 +36,19 @@ public class InternalTokenFilter extends OncePerRequestFilter {
 
         boolean protectedPath = PROTECTED_PATHS.contains(path);
 
-        if (protectedPath) {
+        String requestKey = request.getHeader(INTERNAL_HEADER_NAME);
 
-            if (request.getHeader(INTERNAL_HEADER_NAME) != null &&
-                request.getHeader(INTERNAL_HEADER_NAME).equals(internalApiKey)) {
+        if (protectedPath &&
+            requestKey != null && requestKey.equals(internalApiKey)) {
 
-                UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                        "system",
-                        null,
-                        List.of(new SimpleGrantedAuthority("ROLE_SYSTEM"))
-                    );
+            UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
+                    "system",
+                    null,
+                    List.of(new SimpleGrantedAuthority("ROLE_INTERNAL"))
+                );
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } else {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.getWriter().write("Forbidden: Invalid internal key");
-            }
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
         filterChain.doFilter(request, response);

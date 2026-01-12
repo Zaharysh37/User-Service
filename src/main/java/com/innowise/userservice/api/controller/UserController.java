@@ -63,7 +63,7 @@ public class UserController {
     }
 
     @GetMapping("/email")
-    @PreAuthorize("hasRole('ADMIN') or @securityHelper.isEmailOwner(#email)")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('INTERNAL') or @securityHelper.isEmailOwner(#email)")
     public ResponseEntity<GetUserDto> getUserByEmail(@RequestParam String email) {
         GetUserDto user = userService.getUserByEmail(email);
         return new ResponseEntity<>(user, HttpStatus.OK);
