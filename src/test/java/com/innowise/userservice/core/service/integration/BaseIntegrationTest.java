@@ -1,6 +1,7 @@
 package com.innowise.userservice.core.service.integration;
 
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
@@ -10,6 +11,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@ActiveProfiles("test")
 @Testcontainers
 public abstract class BaseIntegrationTest {
 
@@ -25,7 +27,6 @@ public abstract class BaseIntegrationTest {
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
-
         String jdbcUrl = postgres.getJdbcUrl()
             .replace("localhost", postgres.getHost());
 
@@ -42,5 +43,10 @@ public abstract class BaseIntegrationTest {
         registry.add("spring.data.redis.host", redis::getHost);
         registry.add("spring.data.redis.port", redis::getFirstMappedPort);
         registry.add("spring.cache.type", () -> "redis");
+
+        registry.add("management.tracing.enabled", () -> "false");
+        registry.add("management.otlp.tracing.export.enabled", () -> "false");
+
+        registry.add("ROLLBACK_KEY", () -> "test-super-secret-internal-key-12345");
     }
 }
