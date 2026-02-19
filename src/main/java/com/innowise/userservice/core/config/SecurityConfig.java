@@ -40,9 +40,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(
-                    "/api/users/internal/register",
                     "/actuator/**",
-                    "/api/users/registration",
                     "/api/auth/.well-known/jwks.json"
                 )
                 .permitAll()

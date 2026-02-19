@@ -22,7 +22,8 @@ public class InternalTokenFilter extends OncePerRequestFilter {
     private final String INTERNAL_HEADER_NAME = "x-internal-key";
 
     private final Set<String> PROTECTED_PATHS = Set.of(
-        "/api/users/email"
+        "/api/users/email",
+        "/api/users/registration"
     );
 
     @Value("${internal.api-key}")

@@ -28,6 +28,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/registration")
+    @PreAuthorize("hasRole('INTERNAL')")
     public ResponseEntity<GetUserDto> registerUser(@Valid @RequestBody
                                                          CreateUserDto dto) {
         GetUserDto createdUser = userService.createUser(dto);
