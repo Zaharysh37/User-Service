@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-test-analyze:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,6 +18,9 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      - name: Fix Docker API version for Testcontainers
+        run: echo "api.version=1.44" > ~/.docker-java.properties
 
       - name: Cache Maven packages
         uses: actions/cache@v4
