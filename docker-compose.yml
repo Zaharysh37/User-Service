@@ -26,6 +26,7 @@ services:
       DB_NAME: ${DB_NAME}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      ROLLBACK_KEY: ${my-super-secret-internal-key-12345}
     depends_on:
       postgres-order-db:
         condition: service_started

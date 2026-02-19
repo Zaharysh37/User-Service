@@ -8,6 +8,7 @@ import com.innowise.userservice.core.exception.ResourceNotFoundException;
 import com.innowise.userservice.core.service.UserService;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.commons.collections4.Get;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import org.springframework.cache.CacheManager;
 import java.util.Objects;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -76,7 +78,7 @@ class UserServiceIntegrationTest extends BaseIntegrationTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void test_getUserByIds_WithPagination() {
+    void test_getUserByIds_Success() {
         for (int i = 1; i <= 5; i++) {
             CreateUserDto dto = createTestUserDto();
             dto.setEmail("user" + i + "@mail.com");
@@ -88,27 +90,21 @@ class UserServiceIntegrationTest extends BaseIntegrationTest {
             .map(User::getId)
             .collect(Collectors.toList());
 
-        Pageable pageable = PageRequest.of(0, 2);
-
-        Page<GetUserDto> result = userService.getUserByIds(allIds, pageable);
+        List<GetUserDto> result = userService.getAllById(allIds);
 
         assertNotNull(result);
-        assertEquals(2, result.getContent().size());
-        assertEquals(5, result.getTotalElements());
-        assertEquals(3, result.getTotalPages());
+        assertEquals(5, result.size());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void test_getUserByIds_NonExistentIds_ReturnsEmptyPage() {
+    void test_getUserByIds_NonExistentIds_ReturnsEmptyList() {
         List<Long> nonExistentIds = List.of(999L, 1000L);
-        Pageable pageable = PageRequest.of(0, 10);
 
-        Page<GetUserDto> result = userService.getUserByIds(nonExistentIds, pageable);
+        List<GetUserDto> result = userService.getAllById(nonExistentIds);
 
         assertNotNull(result);
-        assertTrue(result.getContent().isEmpty());
-        assertEquals(0, result.getTotalElements());
+        assertTrue(result.isEmpty());
     }
 
     @Test

@@ -39,11 +39,13 @@ public class CardInfoService {
         return getCardInfoMapper.toDto(savedCard);
     }
 
+    @Transactional(readOnly = true)
     public GetCardInfoDto getCardInfoById(Long id) {
         CardInfo existingCardInfo = findCardInfoById(id);
         return getCardInfoMapper.toDto(existingCardInfo);
     }
 
+    @Transactional(readOnly = true)
     public Page<GetCardInfoDto> getAllCardInfos(Pageable pageable) {
         Page<CardInfo> cardInfos = cardInfoRepository.findAll(pageable);
         return cardInfos.map(getCardInfoMapper::toDto);

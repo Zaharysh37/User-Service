@@ -1,0 +1,6 @@
+services:
+  redis-cache:
+    image: redis:7.2-alpine
+    container_name: user-service-redis
+    ports:
+      - "${REDIS_PORT}:6379"

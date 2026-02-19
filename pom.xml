@@ -39,6 +39,7 @@
             **/com/innowise/userservice/core/dao/**,
             **/com/innowise/userservice/core/exception/**,
             **/com/innowise/userservice/core/config/**,
+            **/com/innowise/userservice/core/filter/**,
             **/com/innowise/userservice/security/**,
             **/com/innowise/userservice/core/mapper/**,
             **/com/innowise/userservice/api/dto/**,

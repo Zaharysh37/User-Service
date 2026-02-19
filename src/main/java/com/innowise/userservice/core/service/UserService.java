@@ -34,28 +34,33 @@ public class UserService {
         return getUserMapper.toDto(savedUser);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "users", key = "#id")
     public GetUserDto getUserById(Long id) {
         User existingUser = findUserById(id);
         return getUserMapper.toDto(existingUser);
     }
 
-    public Page<GetUserDto> getUserByIds(List<Long> ids, Pageable pageable) {
-        Page<User> existingUsers = userRepository.findAllById(ids, pageable);
-        return existingUsers.map(getUserMapper::toDto);
+    @Transactional(readOnly = true)
+    public List<GetUserDto> getAllById(List<Long> ids) {
+        List<User> existingUsers = userRepository.findAllById(ids);
+        return getUserMapper.toDtos(existingUsers);
     }
 
+    @Transactional(readOnly = true)
     public GetUserDto getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
         return getUserMapper.toDto(user);
     }
 
+    @Transactional(readOnly = true)
     public Page<GetUserDto> getUserByFirstLettersOfSurname(String letter, Pageable pageable) {
         Page<User> users = userRepository.findBySurnameStartsWith(letter, pageable);
         return users.map(getUserMapper::toDto);
     }
 
+    @Transactional(readOnly = true)
     public Page<GetUserDto> getAllUsers(Pageable pageable) {
         Page<User> users = userRepository.findAll(pageable);
         return users.map(getUserMapper::toDto);
@@ -84,6 +89,7 @@ public class UserService {
             .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
 
+    @Transactional(readOnly = true)
     public GetUserDto getUserByCardNumber(String cardNumber) {
         User user = cardInfoRepository.findUserByCardNumber(cardNumber)
             .orElseThrow(() -> new ResourceNotFoundException("User not found for card: " + cardNumber));

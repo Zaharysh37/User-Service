@@ -27,8 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     private final UserService userService;
 
-    @PostMapping("/internal/register")
-    public ResponseEntity<GetUserDto> internalCreateUser(@Valid @RequestBody
+    @PostMapping("/registration")
+    public ResponseEntity<GetUserDto> registerUser(@Valid @RequestBody
                                                          CreateUserDto dto) {
         GetUserDto createdUser = userService.createUser(dto);
         return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
@@ -53,18 +53,17 @@ public class UserController {
     public ResponseEntity<GetUserDto> getUserById(@PathVariable Long id) {
         GetUserDto user = userService.getUserById(id);
         return new ResponseEntity<>(user, HttpStatus.OK);
-
     }
 
-    @GetMapping("/by-ids")
-    @PreAuthorize("hasRole('ADMIN') or @securityHelper.isOwner(#id)")
-    public ResponseEntity<Page<GetUserDto>> getUserByIds(@RequestBody List<Long> ids, Pageable pageable) {
-        Page<GetUserDto> users = userService.getUserByIds(ids, pageable);
+    @PostMapping("/batch/id")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<GetUserDto>> getAllById(@RequestBody List<Long> ids) {
+        List<GetUserDto> users = userService.getAllById(ids);
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
     @GetMapping("/email")
-    @PreAuthorize("hasRole('ADMIN') or @securityHelper.isEmailOwner(#email)")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('INTERNAL') or @securityHelper.isEmailOwner(#email)")
     public ResponseEntity<GetUserDto> getUserByEmail(@RequestParam String email) {
         GetUserDto user = userService.getUserByEmail(email);
         return new ResponseEntity<>(user, HttpStatus.OK);

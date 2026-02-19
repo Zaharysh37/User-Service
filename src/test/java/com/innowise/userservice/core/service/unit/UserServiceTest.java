@@ -101,50 +101,31 @@ class UserServiceTest {
     @WithMockUser(roles = "ADMIN")
     void test_getUserByIds_Success() {
         List<Long> ids = List.of(1L, 2L, 3L);
-        Pageable pageable = PageRequest.of(0, 10);
 
         User user1 = new User();
         user1.setId(1L);
         User user2 = new User();
         user2.setId(2L);
 
-        Page<User> userPage = new PageImpl<>(List.of(user1, user2), pageable, 2);
+        List<User> userList = List.of(user1, user2);
         GetUserDto dto1 = new GetUserDto();
         dto1.setId(1L);
         GetUserDto dto2 = new GetUserDto();
         dto2.setId(2L);
+        List<GetUserDto> dtoList = List.of(dto1, dto2);
 
-        when(userRepository.findAllById(ids, pageable)).thenReturn(userPage);
-        when(getUserMapper.toDto(user1)).thenReturn(dto1);
-        when(getUserMapper.toDto(user2)).thenReturn(dto2);
+        when(userRepository.findAllById(ids)).thenReturn(userList);
+        when(getUserMapper.toDtos(userList)).thenReturn(dtoList);
 
-        Page<GetUserDto> result = userService.getUserByIds(ids, pageable);
-
-        assertNotNull(result);
-        assertEquals(2, result.getContent().size());
-        assertEquals(1L, result.getContent().get(0).getId());
-        assertEquals(2L, result.getContent().get(1).getId());
-
-        verify(userRepository, times(1)).findAllById(ids, pageable);
-        verify(getUserMapper, times(1)).toDto(user1);
-        verify(getUserMapper, times(1)).toDto(user2);
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    void test_getUserByIds_EmptyList_ReturnsEmptyPage() {
-        List<Long> ids = List.of();
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<User> emptyPage = Page.empty(pageable);
-
-        when(userRepository.findAllById(ids, pageable)).thenReturn(emptyPage);
-
-        Page<GetUserDto> result = userService.getUserByIds(ids, pageable);
+        List<GetUserDto> result = userService.getAllById(ids);
 
         assertNotNull(result);
-        assertTrue(result.getContent().isEmpty());
-        verify(userRepository, times(1)).findAllById(ids, pageable);
-        verify(getUserMapper, never()).toDto(any());
+        assertEquals(2, result.size());
+        assertEquals(1L, result.get(0).getId());
+        assertEquals(2L, result.get(1).getId());
+
+        verify(userRepository, times(1)).findAllById(ids);
+        verify(getUserMapper, times(1)).toDtos(userList);
     }
 
     @Test
